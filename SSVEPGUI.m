@@ -81,7 +81,7 @@ count = 0;
 if get(hObject,'Value') && count == 0
 % load the BioRadio API using a MATLAB's .NET interface
 if isequal(getenv('computername'),'ME11W0207GRD01')
-    [ deviceManager , flag ] = load_API('C:\Users\mmahmood31\Dropbox (GaTech)\YeoLab\_SSVEP\BioRadio\BioRadioSDK.dll');
+    [ deviceManager , flag ] = load_API('C:\Users\mmahmood31\Dropbox (GaTech)\YeoLab\_SSVEP\MATLAB-BioRadio-Recording-Labels\BioRadioSDK.dll');
 elseif isequal(getenv('computername'),'MusaMahmood-PC')
     [ deviceManager , flag ] = load_API('C:\Users\Musa Mahmood\Dropbox\Public\_VCU\Yeo Lab\_SSVEP\_MATLAB-SSVEP-Classification\BioRadioSDK.dll');
 end
@@ -238,17 +238,21 @@ while get(hObject,'Value') == 1
 end     %/while connected==1
 
 if get(hObject,'Value') == 0
-    mkdir('\output_data')
-    filename = ['/output_data/SSVEP_DATA_' datestr(now,'yyyy_mm_dd__HH.MM.SS')];
+    mkdir('output_data')
+    filename = ['output_data/SSVEP_DATA_' datestr(now,'yyyy_mm_dd__HH.MM.SS') '.mat']
     myDevice.StopAcquisition;  
     Trial = cell(1,numEnabledBPChannels);
     for i=1:numEnabledBPChannels + 1
         Trial{1,i} = BioPotentialSignals{i};
     end
+    relevant_data = cell2mat(Trial);
+    SamplingRate = Fs;
+    
     assignin('base','NumberOfChannels',numEnabledBPChannels);
     assignin('base','TrialData',Trial)
-    relevant_data = cell2mat(Trial);
-    save(filename, 'relevant_data');
-    SamplingRate = Fs;
     assignin('base','SamplingRate',SamplingRate);
+    assignin('base','relevant_data',relevant_data);
+    if(~isempty(relevant_data))
+        save(filename, 'relevant_data');
+    end
 end
