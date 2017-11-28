@@ -20,7 +20,7 @@ function varargout = SSVEPGUI(varargin)
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 % Edit the above text to modify the response to help SSVEPGUI
-% Last Modified by GUIDE v2.5 27-Feb-2017 13:16:51
+% Last Modified by GUIDE v2.5 28-Nov-2017 12:25:35
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -146,7 +146,7 @@ Fs = double(myDevice.BioPotentialSignals.SamplesPerSecond);
 %Preallocating and setting up which area in the SSVEPGUI the plot will go into
     % First two are raw data
     % Next two are data analysis features. 
-numAxes = 8; 
+numAxes = 9; 
 axis_handles = zeros(1,numAxes);
 for ch = 1:numAxes
     axis_handles(ch) = handles.(['axes',num2str(ch)]);
@@ -164,7 +164,7 @@ OUTPUT = zeros(1,50);
 [Y,Sound_Fs] = audioread('beep_01a.mp3');
 beep = audioplayer(Y,Sound_Fs);
 % play(beep)
-[~,b,a] = customFilt(zeros(1000,1), Fs, [5 20], 3);
+[~,b,a] = customFilt(zeros(1000,1), Fs, [1.0 40.0], 3);
 INTERVAL = 10; % SECONDS
 CURRENT_CLASS = 0;
 CLASS = cell(1,1);
@@ -205,6 +205,8 @@ while get(hObject,'Value') == 1
         end
     end
     CURRENT_CLASS
+    cla(axis_handles(9), 'reset');
+    hold( axis_handles(9), 'on' )
     for ch = 1:numEnabledBPChannels
         NewData = myDevice.BioPotentialSignals.Item(ch-1).GetScaledValueArray.double';
         BioPotentialSignals{ch} = [BioPotentialSignals{ch}; NewData];
@@ -231,10 +233,14 @@ while get(hObject,'Value') == 1
                 set(handles.(['axes',num2str(ch)]),'XLim',[t{ch}(end)-plotWindow t{ch}(end)]);
                 set(get(handles.(['axes',num2str(ch)]), 'XLabel'), 'String', 'Time(s)')
                 set(get(handles.(['axes',num2str(ch)]), 'YLabel'), 'String',  'mV')
-%                 set(handles.(['axes',num2str(ch)]),'YLim',[-2E-4 2E-4]);
+                % Plot PSD:
+                [PSD(:, ch), f] = welch_psd(filtered_data, Fs, hann(1024));
+                plot(axis_handles(9), f, PSD(:,ch));
+                set(handles.(['axes',num2str(9)]),'XLim',[f(1) f(165)]);
             end
         end     %/if length(BioPotentialSignals{ch}) <= plotWindow*Fs
     end     %/for ch = 1:numEnabledBPChannels
+    % PLOT PSD DATA:
 end     %/while connected==1
 
 if get(hObject,'Value') == 0
