@@ -236,7 +236,7 @@ while get(hObject,'Value') == 1
                 % Plot PSD:
                 [PSD(:, ch), f] = welch_psd(filtered_data, Fs, hann(1024));
                 plot(axis_handles(9), f, PSD(:,ch));
-                set(handles.(['axes',num2str(9)]),'XLim',[f(1) f(165)]);
+                set(handles.(['axes',num2str(9)]),'XLim',[f(36) f(86)]);
             end
         end     %/if length(BioPotentialSignals{ch}) <= plotWindow*Fs
     end     %/for ch = 1:numEnabledBPChannels
@@ -251,6 +251,7 @@ if get(hObject,'Value') == 0
     for i=1:numEnabledBPChannels + 1
         Trial{1,i} = BioPotentialSignals{i};
     end
+    
     relevant_data = cell2mat(Trial);
     SamplingRate = Fs;
     
